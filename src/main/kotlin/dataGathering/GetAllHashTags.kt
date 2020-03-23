@@ -1,14 +1,12 @@
 package dataGathering
 
+import ApplicationRegex.hasMentionRegex
+import ApplicationRegex.hasTagRegex
 import dataBase.DatabaseFactory
-import dataBase.tables.AusPol2019DataTable
-import dataBase.tables.Tweet
 import dataBase.tables.TweetTable
 import dataBase.tables.UserTable
 import org.jetbrains.exposed.sql.selectAll
 
-val hasTagRegex = """\s#([\w_-]+)""".toRegex()
-val hasMentionRegex = """\s@([\w_-]+)""".toRegex()
 
 class GetAllHashTags {
 
