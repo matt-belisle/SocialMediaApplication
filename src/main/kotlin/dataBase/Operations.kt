@@ -3,11 +3,10 @@ package dataBase
 import ApplicationRegex
 import dataBase.tables.*
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
+import kotlin.and
 
 object Operations {
     private val logger = KotlinLogging.logger {}
@@ -122,6 +121,39 @@ object Operations {
             } catch (e: Exception) {
                 logger.error { e.localizedMessage }
                 logger.debug { e.stackTrace }
+            }
+        }
+    }
+    suspend fun favoriteTweet(tweetID: Int, userID: Int){
+        DatabaseFactory.dbQuery {
+            FavoritesTable.insert {
+                it[this.userID] = userID
+                it[this.tweetID] = tweetID
+            }
+        }
+    }
+
+    suspend fun unfavoriteTweet(tweetID: Int, userID: Int){
+        DatabaseFactory.dbQuery {
+            FavoritesTable.deleteWhere {
+                (FavoritesTable.tweetID eq tweetID) and (FavoritesTable.userID eq userID)
+            }
+        }
+    }
+
+    suspend fun retweetTweet(tweetID: Int, userID: Int){
+        DatabaseFactory.dbQuery {
+            RetweetsTable.insert {
+                it[this.userID] = userID
+                it[this.tweetID] = tweetID
+            }
+        }
+    }
+
+    suspend fun unRetweetTweet(tweetID: Int, userID: Int){
+        DatabaseFactory.dbQuery {
+            RetweetsTable.deleteWhere {
+                (RetweetsTable.tweetID eq tweetID) and (RetweetsTable.userID eq userID)
             }
         }
     }

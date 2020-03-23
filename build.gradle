@@ -38,6 +38,8 @@ dependencies {
     // for api
     compile "io.ktor:ktor-server-core:$ktor_version"
     compile "io.ktor:ktor-server-netty:$ktor_version"
+    // API with JSON
+    compile "io.ktor:ktor-jackson:$ktor_version"
 }
 
 compileKotlin {
