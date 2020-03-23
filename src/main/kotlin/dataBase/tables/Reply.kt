@@ -9,6 +9,6 @@ object ReplyTable: Table("Reply") {
     override val primaryKey = PrimaryKey(originalID, replyID)
 }
 
-class Reply(val originalID: Int, val replyID: Int){
+data class Reply(val originalID: Int, val replyID: Int){
     constructor(it: ResultRow): this(it[ReplyTable.originalID], it[ReplyTable.replyID])
 }

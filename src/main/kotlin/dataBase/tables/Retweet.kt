@@ -9,6 +9,6 @@ object RetweetsTable: Table("Retweet"){
     override val primaryKey = PrimaryKey(userID, tweetID)
 }
 
-class Retweet(val tweetID: Int, val userID: Int){
+data class Retweet(val tweetID: Int, val userID: Int){
     constructor(it: ResultRow): this(it[RetweetsTable.tweetID], it[RetweetsTable.userID])
 }

@@ -9,6 +9,6 @@ object FollowsTable: Table("Follows"){
     override val primaryKey = PrimaryKey(userIDFollower, userIDFollowed)
 }
 
-class Follows(val follower: Int, val followed: Int){
+data class Follows(val follower: Int, val followed: Int){
     constructor(it: ResultRow): this(it[FollowsTable.userIDFollower], it[FollowsTable.userIDFollowed])
 }

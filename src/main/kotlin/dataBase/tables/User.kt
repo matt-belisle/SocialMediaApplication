@@ -13,6 +13,6 @@ object UserTable: Table("User"){
     override val primaryKey = PrimaryKey(id)
 }
 
-class User(id: Int, userID: String, description: String, userCreated: DateTime){
+data class User(val id: Int, val userID: String, val description: String, val userCreated: DateTime){
     constructor(it: ResultRow): this(it[UserTable.id], it[UserTable.userID], it[UserTable.description], it[UserTable.userCreated])
 }

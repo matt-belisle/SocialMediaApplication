@@ -12,6 +12,6 @@ object TweetHashtagsTable: Table("TweetHashtags") {
     )
 }
 
-class TweetHashtags(val hashTag: String, val tweetID: Int){
+data class TweetHashtags(val hashTag: String, val tweetID: Int){
     constructor(it: ResultRow): this(it[TweetHashtagsTable.hashTag], it[TweetHashtagsTable.tweetID])
 }

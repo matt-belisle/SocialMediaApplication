@@ -8,6 +8,6 @@ object HashTagsTable: Table("HashTags"){
     override val primaryKey = PrimaryKey(hashTag)
 }
 
-class HashTags(val hashTag: String){
+data class HashTags(val hashTag: String){
     constructor(it: ResultRow): this(it[HashTagsTable.hashTag])
 }

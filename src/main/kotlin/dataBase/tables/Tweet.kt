@@ -12,7 +12,7 @@ object TweetTable: Table("Tweet"){
     override val primaryKey = PrimaryKey(id)
 }
 
-class Tweet(val id: Int, val userID: Int, val text: String){
+data class Tweet(val id: Int, val userID: Int, val text: String){
     constructor(it: ResultRow): this(
         id = it[TweetTable.id],
         userID = it[TweetTable.userID],

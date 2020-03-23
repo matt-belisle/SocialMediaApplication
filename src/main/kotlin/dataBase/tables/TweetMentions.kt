@@ -9,6 +9,6 @@ object TweetMentionsTable: Table("TweetMentions"){
     override val primaryKey = PrimaryKey(userID, tweetID)
 }
 
-class TweetMentions(val userID: Int, val tweetID: Int){
+data class TweetMentions(val userID: Int, val tweetID: Int){
     constructor(it: ResultRow): this(it[TweetMentionsTable.userID], it[TweetMentionsTable.tweetID])
 }
