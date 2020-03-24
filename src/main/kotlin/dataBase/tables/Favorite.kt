@@ -3,7 +3,7 @@ package dataBase.tables
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 
-object FavoritesTable: Table("Favorites"){
+object FavoritesTable: Table("Favorite"){
     val tweetID = integer("tweetID") references TweetTable.id
     val userID = integer("userID") references UserTable.id
     override val primaryKey = PrimaryKey(userID, tweetID)

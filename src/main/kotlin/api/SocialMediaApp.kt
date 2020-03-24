@@ -1,3 +1,6 @@
+package api
+
+import api.JacksonObjectMapper
 import dataBase.tables.Tweet
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -8,7 +11,6 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
 import io.ktor.jackson.JacksonConverter
 import io.ktor.response.respond
-import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import io.ktor.server.engine.embeddedServer
@@ -19,7 +21,7 @@ fun Application.module() {
     install(DefaultHeaders)
     install(CallLogging)
     install(Routing) {
-        get("/") {
+        get("i/") {
             call.respond(Tweet(1,2,"This is From Jackson", DateTime.now()))
         }
     }
