@@ -16,13 +16,12 @@ object DatabaseFactory {
     private val logger = mu.KotlinLogging.logger {}
     // call this before any DB calls to set up DB connection
     fun init() {
-        // Database.connect("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", driver = "org.h2.Driver")
         val config = ConfigurationFactory.getConfiguration()
         Database.connect(url = "jdbc:mysql://${config.dbURL}?useSSL=false&rewriteBatchedInserts=true", driver = "com.mysql.jdbc.Driver", user = config.dbUsername, password = config.dbPassword)
         //TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     }
 
-    // this will execute a dbQuery asynchronously
+    // this will execute a dbQuery asynchronously as a transaction
     suspend fun <T> dbQuery(
         block: () -> T): T =
         withContext(Dispatchers.IO) {

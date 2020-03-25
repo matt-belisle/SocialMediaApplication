@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 
 object Operations {
     private val logger = KotlinLogging.logger {}
-    
+
     suspend fun parseAndInsertTweet(tweet: String, userID: Int, replyTo: Int) {
         //first parse out hashtags
         val hashTags: List<String> = ApplicationRegex.hasTagRegex.findAll(tweet).map { it.groupValues[1] }.toList()
@@ -172,16 +172,66 @@ object Operations {
         return user
     }
 
-    suspend fun getTweetsByUser(userID: Int): List<FullTweet>{
+    suspend fun getTweetsByUser(userID: Int): List<FullTweet> {
         //returns the tweets, and retweets by a person
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
             TweetTable.select { TweetTable.userID eq userID }.forEach { tweets.add(Tweet(it)) }
-            TweetTable.join(RetweetsTable,JoinType.INNER, TweetTable.id, RetweetsTable.tweetID).select {
+            TweetTable.join(RetweetsTable, JoinType.INNER, TweetTable.id, RetweetsTable.tweetID).select {
                 RetweetsTable.userID eq userID
-            }.forEach{tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp]))}
+            }.forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it) }
+    }
+
+    suspend fun getFollowedTweets(userID: Int): List<FullTweet> {
+        val tweets = mutableListOf<Tweet>()
+        DatabaseFactory.dbQuery {
+            TweetTable.select {
+                TweetTable.userID inSubQuery (FollowsTable.slice(FollowsTable.userIDFollowed)
+                    .select { FollowsTable.userIDFollower eq userID })
+            }.forEach { tweets.add(Tweet(it)) }
+        }
+        return tweets.map { FullTweet.tweetToFullTweet(it) }.sortedBy { it.timestamp }
+    }
+
+    // the only sql error would be if the follower already exists not going to catch it, although i could
+    suspend fun followUser(follower: Int, followed: Int) {
+        DatabaseFactory.dbQuery {
+            FollowsTable.insert {
+                it[FollowsTable.userIDFollowed] = followed
+                it[FollowsTable.userIDFollower] = follower
+            }
+        }
+    }
+
+    // similarly only sql error would be if they werent following that user already
+    suspend fun unfollowUser(follower: Int, followed: Int) {
+        DatabaseFactory.dbQuery {
+            FollowsTable.deleteWhere {
+                (FollowsTable.userIDFollower eq follower) and (FollowsTable.userIDFollowed eq followed)
+            }
+        }
+    }
+
+    suspend fun followerCount(userID: Int): Int {
+        var ret = 0
+        DatabaseFactory.dbQuery {
+            ret = FollowsTable.select {
+                FollowsTable.userIDFollowed eq userID
+            }.count().toInt()
+        }
+        return ret
+    }
+
+    suspend fun followCount(userID: Int): Int {
+        var ret = 0
+        DatabaseFactory.dbQuery {
+            ret = FollowsTable.select {
+                FollowsTable.userIDFollower eq userID
+            }.count().toInt()
+        }
+        return ret
     }
 
     //these should only be called within a transaction, allowing a transaction to be composed of functions :)
