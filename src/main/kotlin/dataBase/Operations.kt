@@ -156,6 +156,22 @@ object Operations {
         return user
     }
 
+    //remove all data! should be GDPR friendly this way lol
+    suspend fun deleteUser(userID: Int){
+        DatabaseFactory.dbQuery {
+            RetweetsTable.deleteWhere { RetweetsTable.userID eq userID }
+            FavoritesTable.deleteWhere { FavoritesTable.userID eq userID }
+            FollowsTable.deleteWhere { (FollowsTable.userIDFollower eq userID) or (FollowsTable.userIDFollowed eq userID) }
+            TweetMentionsTable.deleteWhere { TweetMentionsTable.userID eq userID }
+            TweetTable.update ({TweetTable.userID eq userID}) {
+                it[TweetTable.userID] = -1
+                it[TweetTable.text] = "[deleted]"
+                it[TweetTable.timestamp] = DateTime(Long.MIN_VALUE)
+            }
+            UserTable.deleteWhere { UserTable.id eq userID }
+        }
+    }
+
     // returns the updates user
     suspend fun updateDescription(userID: Int, description: String): User {
         var user: User = User(1, "", "", DateTime.now())
@@ -232,6 +248,19 @@ object Operations {
             }.count().toInt()
         }
         return ret
+    }
+
+    //instead of actually deleting, as this will really screw up a lot of things for replies (nested etc) and RTs
+    //which could be solved with cascade, I'd rather just do what Reddit does and remove all the user data
+    //and change to [deleted] for the text
+    suspend fun deleteTweet(tweetID: Int){
+        DatabaseFactory.dbQuery {
+            TweetTable.update ({ TweetTable.id eq tweetID }) {
+                it[TweetTable.userID] = -1
+                it[TweetTable.text] = "[deleted]"
+                it[TweetTable.timestamp] = DateTime(Long.MIN_VALUE)
+            }
+        }
     }
 
     //these should only be called within a transaction, allowing a transaction to be composed of functions :)
