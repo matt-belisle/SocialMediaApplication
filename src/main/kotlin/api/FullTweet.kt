@@ -29,17 +29,22 @@ data class FullTweet(
     val repliedToID: Int,
 
     val favorites: Int,
-    val retweets: Int
+    val retweets: Int,
+
+    val isFavorited: Boolean,
+    val isRetweeted: Boolean
 ) {
     companion object {
         //TODO figure this out, this may be tough for retweet purposes, not sure how to handle yet
         // this assumes the data is there for the tweet, i.e. keep this in the backend only
-        suspend fun tweetToFullTweet(tweet: Tweet): FullTweet {
+        suspend fun tweetToFullTweet(tweet: Tweet, userID: Int): FullTweet {
             var retweetData: Triple<Boolean, String, Int> = Triple(false, "", 0)
             var replyData: Triple<Boolean, String, Int> = Triple(false, "", 0)
             var favorites = 0
             var retweets = 0
             var userName: String = ""
+            var isRetweeted: Boolean = false
+            var isFavorited: Boolean = false
 
             // so a retweet is just the original tweets id + the new tweeters id, so to see if it is a retweet
             // see if it is in the table
@@ -76,6 +81,10 @@ data class FullTweet(
                     repliedTo = row[UserTable.userID]
                     repliedToID = row[ReplyTable.originalID]
                 }
+                //basically you cannot favorite/retweet a retweet in MY social media :)
+                isRetweeted = !isRetweet && RetweetsTable.select { (RetweetsTable.tweetID eq tweet.id) and (RetweetsTable.userID eq userID)}.count() > 0
+                isFavorited = !isRetweet && FavoritesTable.select { (FavoritesTable.tweetID eq tweet.id) and (FavoritesTable.userID eq userID) }.count() > 0
+
                 replyData = Triple(isReply, repliedTo, repliedToID)
 
                 favorites = FavoritesTable.select { FavoritesTable.tweetID eq tweet.id }.count().toInt()
@@ -96,7 +105,9 @@ data class FullTweet(
                 replyData.second,
                 replyData.third,
                 favorites,
-                retweets
+                retweets,
+                isFavorited,
+                isRetweeted
             )
         }
     }
@@ -106,6 +117,6 @@ suspend fun main() {
     DatabaseFactory.init()
     var tweet: Tweet = Tweet(1, 1, "", DateTime.now())
     DatabaseFactory.dbQuery { tweet = Tweet(TweetTable.select { TweetTable.id eq 1 }.first()) }
-    println(FullTweet.tweetToFullTweet(tweet))
+    println(FullTweet.tweetToFullTweet(tweet, 1))
 
 }

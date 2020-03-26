@@ -9,6 +9,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 
 object Operations {
+    //TODO enforce that a user cannot favorite or retweet their own tweet
     private val logger = KotlinLogging.logger {}
 
     suspend fun parseAndInsertTweet(tweet: String, userID: Int, replyTo: Int) {
@@ -122,7 +123,7 @@ object Operations {
         return count
     }
 
-    suspend fun getTweetsForHashTag(hashTag: String): List<FullTweet> {
+    suspend fun getTweetsForHashTag(hashTag: String,searchingUser: Int): List<FullTweet> {
         // this will not get retweets just all tweets for a hashtag and its subHashTags (the base tweets)
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
@@ -132,7 +133,7 @@ object Operations {
                 ).select { SubHashtagTable.parent eq hashTag }))
             }.forEach { tweets.add(Tweet(it)) }
         }
-        return tweets.map { FullTweet.tweetToFullTweet(it) }
+        return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
 
     //returns the created user
@@ -188,7 +189,7 @@ object Operations {
         return user
     }
 
-    suspend fun getTweetsByUser(userID: Int): List<FullTweet> {
+    suspend fun getTweetsByUser(userID: Int, searchingUser: Int): List<FullTweet> {
         //returns the tweets, and retweets by a person
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
@@ -197,7 +198,7 @@ object Operations {
                 RetweetsTable.userID eq userID
             }.forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
         }
-        return tweets.map { FullTweet.tweetToFullTweet(it) }
+        return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
 
     suspend fun getFollowedTweets(userID: Int): List<FullTweet> {
@@ -208,7 +209,7 @@ object Operations {
                     .select { FollowsTable.userIDFollower eq userID })
             }.forEach { tweets.add(Tweet(it)) }
         }
-        return tweets.map { FullTweet.tweetToFullTweet(it) }.sortedBy { it.timestamp }
+        return tweets.map { FullTweet.tweetToFullTweet(it, userID) }.sortedBy { it.timestamp }
     }
 
     // the only sql error would be if the follower already exists not going to catch it, although i could
@@ -330,6 +331,6 @@ object Operations {
 suspend fun main() {
     DatabaseFactory.init()
 //    Operations.retweetTweet(500,1)
-    val tweets = Operations.getTweetsByUser(1)
+    val tweets = Operations.getTweetsByUser(1,1)
     println(tweets.size)
 }

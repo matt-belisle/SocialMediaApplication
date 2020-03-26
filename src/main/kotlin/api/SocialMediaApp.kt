@@ -22,28 +22,29 @@ import org.jetbrains.exposed.sql.selectAll
 import javax.xml.crypto.Data
 
 fun Application.module() {
-    install(DefaultHeaders)
+    install(DefaultHeaders) {
+        header("Access-Control-Allow-Origin", "*")
+    }
     install(CallLogging)
     install(Routing) {
         //TODO add pagination, just add a page number to the route and just make each page 20
-        //to get tweets by either a person or just the newest 20 tweets
-        route("tweets/ForUser/{userID?}") {
+        //to get tweets for a user
+        route("tweets/ForUser/{searchingUser}/{userID?}") {
             get {
-
+                val searchingUser = call.parameters["searchingUser"]!!.toInt()
                 val userID: String? = call.parameters["userID"]
                 if (userID == null) {
                     //get all tweets
-                    async {
                         val tweets = mutableListOf<FullTweet>()
+                        val callRef = call
                         DatabaseFactory.dbQuery {
                             TweetTable.selectAll().limit(10).orderBy(TweetTable.timestamp)
-                                .forEach { runBlocking { tweets.add(FullTweet.tweetToFullTweet(Tweet(it))) } }
+                                .forEach { runBlocking { tweets.add(FullTweet.tweetToFullTweet(Tweet(it), searchingUser)) } }
                         }
                         call.respond(tweets)
-                    }
                 } else {
                     //TODO defensive here not assuming this will parse out correctly
-                    call.respond(Operations.getTweetsByUser(userID.toInt()))
+                    call.respond(Operations.getTweetsByUser(userID.toInt(),searchingUser))
 
                 }
 
@@ -157,10 +158,11 @@ fun Application.module() {
                 call.respond(200)
             }
         }
-        route("hashtag/{hashtag}") {
+        route("hashtag/{userID}/{hashtag}") {
             get {
                 val hashTag = call.parameters["hashtag"]!!
-                call.respond(Operations.getTweetsForHashTag(hashTag))
+                val userID = call.parameters["userID"]!!.toInt()
+                call.respond(Operations.getTweetsForHashTag(hashTag,userID))
             }
         }
     }
