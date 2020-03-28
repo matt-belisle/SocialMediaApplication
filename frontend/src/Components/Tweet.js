@@ -6,7 +6,7 @@ const Tweet = ({ tweets, header,currUserID,refreshTweets }) => {
 
     function handleFavoriteClick(e, tweet) {
         e.preventDefault();
-        let method = tweet.isFavorited === true ? 'delete' : 'put';
+        let method = tweet.isFavorited === true ? 'delete' : 'post';
         fetch(`http://localhost:8080/favorite/tweet/${tweet.tweetID}/${currUserID}`, {method: method})
         //refresh the tweet
         refreshTweets(currUserID)
@@ -14,7 +14,7 @@ const Tweet = ({ tweets, header,currUserID,refreshTweets }) => {
 
     function handleRetweetClick(e, tweet) {
         e.preventDefault();
-        let method = tweet.isRetweeted === true ? 'delete' : 'put';
+        let method = tweet.isRetweeted === true ? 'delete' : 'post';
         fetch(`http://localhost:8080/retweet/tweet/${tweet.tweetID}/${currUserID}`, {method: method})
         //refresh the tweet
         refreshTweets(currUserID)

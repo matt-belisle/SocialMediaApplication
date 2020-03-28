@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
-import Tweet from "./Tweet";
-
+import Tweet from "./Components/Tweet";
+import { ToastProvider } from 'react-toast-notifications'
+import Login from "./Components/Login";
 class App extends Component {
 
 
@@ -9,7 +10,8 @@ class App extends Component {
         this.getTweets = this.getTweets.bind(this)
         this.getTweets.bind(this)
         this.state = {
-            tweets: []
+            tweets: [],
+            screen: AppState.LOGIN
         };
     }
     getTweets(userID){
@@ -26,10 +28,26 @@ class App extends Component {
     }
 
     render() {
+        let currScreen;
+        switch(this.state.screen) {
+            case AppState.LOGIN:
+                currScreen = <Login/>;
+                break;
+                // if anything breaks just boot back to login
+            default:
+                currScreen = <Login/>;
+                break;
+        }
         return (
-            <Tweet tweets={this.state.tweets} header={"Tweets For User 1"} currUserID={1} refreshTweets={this.getTweets}/>
+            <ToastProvider>
+                {currScreen}
+                {/*<Tweet tweets={this.state.tweets} header={"Tweets For User 1"} currUserID={1} refreshTweets={this.getTweets}/>*/}
+            </ToastProvider>
         )
     }
 }
-
+export const AppState = {
+  LOGIN: 'login',
+  TWEETS: 'tweet'
+};
 export default App;
