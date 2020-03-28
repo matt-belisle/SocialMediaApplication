@@ -3,22 +3,31 @@ import Tweet from "./Tweet";
 
 class App extends Component {
 
-    state = {
-        contacts: []
-    };
 
-    componentDidMount() {
-        fetch('http://localhost:8080/tweets/ForUser/1')
+    constructor() {
+        super();
+        this.getTweets = this.getTweets.bind(this)
+        this.getTweets.bind(this)
+        this.state = {
+            tweets: []
+        };
+    }
+    getTweets(userID){
+        fetch(`http://localhost:8080/tweets/ForUser/${userID}`)
             .then(res => res.json())
             .then((data) => {
-                this.setState({contacts: data})
+                this.setState({tweets: data})
             })
             .catch(console.log)
+    }
+    componentDidMount() {
+
+        this.getTweets(1)
     }
 
     render() {
         return (
-            <Tweet contacts={this.state.contacts}/>
+            <Tweet tweets={this.state.tweets} header={"Tweets For User 1"} currUserID={1} refreshTweets={this.getTweets}/>
         )
     }
 }
