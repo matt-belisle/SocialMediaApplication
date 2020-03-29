@@ -7,10 +7,13 @@ import dataBase.tables.TweetTable
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
+import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.JacksonConverter
 import io.ktor.response.respond
 import io.ktor.routing.*
@@ -18,12 +21,15 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import org.joda.time.DateTime
 import javax.xml.crypto.Data
 
 fun Application.module() {
-    install(DefaultHeaders) {
-        header("Access-Control-Allow-Origin", "*")
+    install(CORS) {
+        method(HttpMethod.Delete)
+        anyHost()
     }
     install(CallLogging)
     install(Routing) {
@@ -47,20 +53,36 @@ fun Application.module() {
                     call.respond(Operations.getTweetsByUser(userID.toInt(),searchingUser))
 
                 }
-
             }
         }
+        route("login/{userName}"){
+            post {
+                val userName = call.parameters["userName"]!!
+                val code: HttpStatusCode = if(Operations.userExists(userName)) HttpStatusCode.OK else HttpStatusCode.NotFound
+                call.respond(code)
+            }
+        }
+        route("tweet/{searchingUser}/{tweetID}"){
+            get {
+                val searchingUser = call.parameters["searchingUser"]!!.toInt()
+                val tweetID = call.parameters["tweetID"]!!.toInt()
+                var tweet = Tweet(1,1,"", DateTime.now())
+                DatabaseFactory.dbQuery {
+                    tweet = Tweet(TweetTable.select { TweetTable.id eq tweetID }.first())
+                }
+                call.respond(FullTweet.tweetToFullTweet(tweet,searchingUser))
+            }
+        }
+        // this includes yourself
         route("tweets/ByFollowed/{userID}") {
             get {
                 // must exist this time no optional
                 val userID: String = call.parameters["userID"]!!
-                async {
-                    call.respond(Operations.getFollowedTweets(userID.toInt()))
-                }
+                call.respond(Operations.getFollowedTweets(userID.toInt()))
             }
         }
         route("follow/{follower}/{followed}") {
-            put {
+            post {
                 val follower = call.parameters["follower"]!!.toInt()
                 val followed = call.parameters["followed"]!!.toInt()
                 Operations.followUser(follower, followed)
@@ -83,7 +105,7 @@ fun Application.module() {
             }
         }
         route("favorite/tweet/{tweetID}/{userID}") {
-            put {
+            post {
                 val tweetID = call.parameters["tweetID"]!!.toInt()
                 val userID = call.parameters["userID"]!!.toInt()
 
@@ -98,7 +120,7 @@ fun Application.module() {
             }
         }
         route("retweet/tweet/{tweetID}/{userID}") {
-            put {
+            post {
                 val tweetID = call.parameters["tweetID"]!!.toInt()
                 val userID = call.parameters["userID"]!!.toInt()
                 Operations.retweetTweet(tweetID, userID)
@@ -118,7 +140,7 @@ fun Application.module() {
             }
         }
         route("tweet/{userID}/{tweet}/{replyTo?}") {
-            put {
+            post {
                 val userID = call.parameters["userID"]!!.toInt()
                 val tweet = call.parameters["tweet"]!!
                 val replyTo = call.parameters["replyTo"]
@@ -145,7 +167,7 @@ fun Application.module() {
             }
         }
         route("user/{user}") {
-            put {
+            post {
                 //in this case user is a string
                 val user = call.parameters["user"]!!
                 Operations.addUser(user)
@@ -156,6 +178,16 @@ fun Application.module() {
                 val user = call.parameters["user"]!!.toInt()
                 Operations.deleteUser(user)
                 call.respond(200)
+            }
+            get {
+                val user = call.parameters["user"]!!
+                call.respond(Operations.getUser(user))
+            }
+        }
+        //returns all of the usernames that the database knows
+        route("users/all"){
+            get{
+                call.respond(Operations.getAllUsers())
             }
         }
         route("hashtag/{userID}/{hashtag}") {

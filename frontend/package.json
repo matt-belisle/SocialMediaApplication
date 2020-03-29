@@ -11,7 +11,8 @@
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
     "react-string-replace": "^0.4.4",
-    "react-toast-notifications": "^2.4.0"
+    "react-toast-notifications": "^2.4.0",
+    "reactjs-popup": "^1.5.0"
   },
   "scripts": {
     "start": "react-scripts start",

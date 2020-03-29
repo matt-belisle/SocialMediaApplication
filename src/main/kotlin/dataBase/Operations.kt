@@ -62,7 +62,6 @@ object Operations {
                         }
                         val x = 1
                     }
-                    rollback()
                 } catch (e: Exception) {
                     // the tweet was unsuccessful for any number of reasons
                     rollback()
@@ -131,7 +130,7 @@ object Operations {
                 (TweetHashtagsTable.hashTag eq hashTag) or (TweetHashtagsTable.hashTag inSubQuery (SubHashtagTable.slice(
                     SubHashtagTable.subHashtag
                 ).select { SubHashtagTable.parent eq hashTag }))
-            }.forEach { tweets.add(Tweet(it)) }
+            }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
@@ -167,10 +166,18 @@ object Operations {
             TweetTable.update ({TweetTable.userID eq userID}) {
                 it[TweetTable.userID] = -1
                 it[TweetTable.text] = "[deleted]"
-                it[TweetTable.timestamp] = DateTime(Long.MIN_VALUE)
+                it[TweetTable.timestamp] = DateTime.now()
             }
             UserTable.deleteWhere { UserTable.id eq userID }
         }
+    }
+
+    suspend fun userExists(userName: String): Boolean {
+        var ret = false
+        DatabaseFactory.dbQuery {
+            ret = UserTable.select { UserTable.userID eq userName }.count() == 1L
+        }
+        return ret
     }
 
     // returns the updates user
@@ -193,23 +200,23 @@ object Operations {
         //returns the tweets, and retweets by a person
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
-            TweetTable.select { TweetTable.userID eq userID }.forEach { tweets.add(Tweet(it)) }
+            TweetTable.select { TweetTable.userID eq userID }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
             TweetTable.join(RetweetsTable, JoinType.INNER, TweetTable.id, RetweetsTable.tweetID).select {
                 RetweetsTable.userID eq userID
-            }.forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
+            }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
-
+// includes the user themself, as implicitly you follow yourself
     suspend fun getFollowedTweets(userID: Int): List<FullTweet> {
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
             TweetTable.select {
                 TweetTable.userID inSubQuery (FollowsTable.slice(FollowsTable.userIDFollowed)
-                    .select { FollowsTable.userIDFollower eq userID })
-            }.forEach { tweets.add(Tweet(it)) }
+                    .select { FollowsTable.userIDFollower eq userID }) or (TweetTable.userID eq userID)
+            }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
         }
-        return tweets.map { FullTweet.tweetToFullTweet(it, userID) }.sortedBy { it.timestamp }
+        return tweets.map { FullTweet.tweetToFullTweet(it, userID) }
     }
 
     // the only sql error would be if the follower already exists not going to catch it, although i could
@@ -259,10 +266,27 @@ object Operations {
             TweetTable.update ({ TweetTable.id eq tweetID }) {
                 it[TweetTable.userID] = -1
                 it[TweetTable.text] = "[deleted]"
-                it[TweetTable.timestamp] = DateTime(Long.MIN_VALUE)
             }
         }
     }
+
+//assumes the user will exists, will throw an exception
+    suspend fun getUser(user: String): User {
+        var ret = User(0,"","",DateTime.now())
+        DatabaseFactory.dbQuery {
+            ret = User(UserTable.select { UserTable.userID eq user }.first())
+        }
+    return ret
+    }
+
+    suspend fun getAllUsers(): List<String> {
+        var ret = mutableListOf<String>()
+        DatabaseFactory.dbQuery {
+            ret.addAll(UserTable.slice(UserTable.userID).selectAll().map { it[UserTable.userID].toString() })
+        }
+        return ret
+    }
+
 
     //these should only be called within a transaction, allowing a transaction to be composed of functions :)
     private fun insertTweet(transaction: Transaction, tweet: String, userID: Int): Tweet {
@@ -331,6 +355,20 @@ object Operations {
 suspend fun main() {
     DatabaseFactory.init()
 //    Operations.retweetTweet(500,1)
-    val tweets = Operations.getTweetsByUser(1,1)
-    println(tweets.size)
+    val ids = listOf(65540,
+        35302,
+        28863,
+        26384,
+        31150,
+        26928,
+        38899,
+        37998,
+        38803,
+        33683,
+        44823,
+        41245,
+        42268,
+        41422
+    )
+    ids.forEach {  Operations.deleteUser(it)}
 }

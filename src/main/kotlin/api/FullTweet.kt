@@ -35,8 +35,7 @@ data class FullTweet(
     val isRetweeted: Boolean
 ) {
     companion object {
-        //TODO figure this out, this may be tough for retweet purposes, not sure how to handle yet
-        // this assumes the data is there for the tweet, i.e. keep this in the backend only
+        //TODO less DB queries, theres a lot of queries going on here...
         suspend fun tweetToFullTweet(tweet: Tweet, userID: Int): FullTweet {
             var retweetData: Triple<Boolean, String, Int> = Triple(false, "", 0)
             var replyData: Triple<Boolean, String, Int> = Triple(false, "", 0)
