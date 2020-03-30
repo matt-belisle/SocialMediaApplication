@@ -3,7 +3,6 @@
 import React, {useState} from "react";
 import {useToasts} from 'react-toast-notifications'
 import {Button, FormGroup, FormControl, FormLabel} from "react-bootstrap";
-import TweetModal from "./TweetModal";
 import InputGroup from "react-bootstrap/InputGroup";
 
 export default function Login({getUserAndFinishLogin}) {
@@ -16,8 +15,8 @@ export default function Login({getUserAndFinishLogin}) {
 
     // the enter key is just gonna log you in
     function handleKeyPress(target) {
-        target.preventDefault()
         if(target.charCode === 13){
+            target.preventDefault()
             handleLogin(target)
         }
     }
@@ -61,8 +60,6 @@ export default function Login({getUserAndFinishLogin}) {
             "justify-content": "center",
             "align-items": "center", 'height': '100%'}}>
             <form style={{"text-align": 'center', 'width': '100%'}}>
-
-                <TweetModal isReply={false} currUserID={1} replyToID={-1}/>
                 <div style={{width: "90%", display: "inline-block" }}>
                 <FormGroup controlId="user" bsSize="large">
                     <FormLabel>Login To Social Media</FormLabel>

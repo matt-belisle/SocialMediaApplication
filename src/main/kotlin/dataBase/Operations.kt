@@ -74,9 +74,14 @@ object Operations {
 
     suspend fun favoriteTweet(tweetID: Int, userID: Int) {
         DatabaseFactory.dbQuery {
-            FavoritesTable.insert {
-                it[this.userID] = userID
-                it[this.tweetID] = tweetID
+            val selfFavorite =
+                TweetTable.select { (TweetTable.userID eq userID) and (TweetTable.id eq tweetID) }.count() > 0
+            //TODO probably dont silently fail
+            if (!selfFavorite) {
+                FavoritesTable.insert {
+                    it[this.userID] = userID
+                    it[this.tweetID] = tweetID
+                }
             }
         }
     }
@@ -99,9 +104,14 @@ object Operations {
 
     suspend fun retweetTweet(tweetID: Int, userID: Int) {
         DatabaseFactory.dbQuery {
-            RetweetsTable.insert {
-                it[this.userID] = userID
-                it[this.tweetID] = tweetID
+            val selfRetweet =
+                TweetTable.select { (TweetTable.userID eq userID) and (TweetTable.id eq tweetID) }.count() > 0
+            //TODO probably dont silently fail
+            if (!selfRetweet) {
+                RetweetsTable.insert {
+                    it[this.userID] = userID
+                    it[this.tweetID] = tweetID
+                }
             }
         }
     }
@@ -122,15 +132,22 @@ object Operations {
         return count
     }
 
-    suspend fun getTweetsForHashTag(hashTag: String,searchingUser: Int): List<FullTweet> {
+    suspend fun getTweetsForHashTag(hashTag: String, searchingUser: Int, subHashtags: Boolean): List<FullTweet> {
         // this will not get retweets just all tweets for a hashtag and its subHashTags (the base tweets)
         val tweets = mutableListOf<Tweet>()
+
         DatabaseFactory.dbQuery {
-            TweetHashtagsTable.join(TweetTable, JoinType.INNER, TweetHashtagsTable.tweetID).select {
-                (TweetHashtagsTable.hashTag eq hashTag) or (TweetHashtagsTable.hashTag inSubQuery (SubHashtagTable.slice(
-                    SubHashtagTable.subHashtag
-                ).select { SubHashtagTable.parent eq hashTag }))
-            }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
+            if (subHashtags) {
+                TweetHashtagsTable.join(TweetTable, JoinType.INNER, TweetHashtagsTable.tweetID).select {
+                    (TweetHashtagsTable.hashTag eq hashTag) or (TweetHashtagsTable.hashTag inSubQuery (SubHashtagTable.slice(
+                        SubHashtagTable.subHashtag
+                    ).select { SubHashtagTable.parent eq hashTag }))
+                }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
+            } else {
+                TweetHashtagsTable.join(TweetTable, JoinType.INNER, TweetHashtagsTable.tweetID).select {
+                    (TweetHashtagsTable.hashTag eq hashTag)
+                }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
+            }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
@@ -157,15 +174,15 @@ object Operations {
     }
 
     //remove all data! should be GDPR friendly this way lol
-    suspend fun deleteUser(userID: Int){
+    suspend fun deleteUser(userID: Int) {
         DatabaseFactory.dbQuery {
             RetweetsTable.deleteWhere { RetweetsTable.userID eq userID }
             FavoritesTable.deleteWhere { FavoritesTable.userID eq userID }
             FollowsTable.deleteWhere { (FollowsTable.userIDFollower eq userID) or (FollowsTable.userIDFollowed eq userID) }
             TweetMentionsTable.deleteWhere { TweetMentionsTable.userID eq userID }
-            TweetTable.update ({TweetTable.userID eq userID}) {
+            TweetTable.update({ TweetTable.userID eq userID }) {
                 it[TweetTable.userID] = -1
-                it[TweetTable.text] = "[deleted]"
+                it[text] = "[deleted]"
                 it[TweetTable.timestamp] = DateTime.now()
             }
             UserTable.deleteWhere { UserTable.id eq userID }
@@ -200,14 +217,17 @@ object Operations {
         //returns the tweets, and retweets by a person
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
-            TweetTable.select { TweetTable.userID eq userID }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it)) }
+            TweetTable.select { TweetTable.userID eq userID }.orderBy(TweetTable.timestamp to SortOrder.DESC)
+                .forEach { tweets.add(Tweet(it)) }
             TweetTable.join(RetweetsTable, JoinType.INNER, TweetTable.id, RetweetsTable.tweetID).select {
                 RetweetsTable.userID eq userID
-            }.orderBy(TweetTable.timestamp to SortOrder.DESC).forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
+            }.orderBy(TweetTable.timestamp to SortOrder.DESC)
+                .forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
     }
-// includes the user themself, as implicitly you follow yourself
+
+    // includes the user themself, as implicitly you follow yourself
     suspend fun getFollowedTweets(userID: Int): List<FullTweet> {
         val tweets = mutableListOf<Tweet>()
         DatabaseFactory.dbQuery {
@@ -238,6 +258,28 @@ object Operations {
         }
     }
 
+    suspend fun followedUsers(userID: Int) = followx(userID, false)
+    suspend fun followers(userID: Int) = followx(userID, true)
+    // gets either the followers or who the person is following
+    private suspend fun followx(userID: Int, followers: Boolean): List<User>{
+        val ret = mutableListOf<User>()
+        val joinColumn = if(followers) FollowsTable.userIDFollower else FollowsTable.userIDFollowed
+        val whereColumn = if(followers) FollowsTable.userIDFollowed else FollowsTable.userIDFollower
+        DatabaseFactory.dbQuery {
+            ret.addAll(FollowsTable.join(UserTable, JoinType.INNER, UserTable.id, joinColumn).select {
+                whereColumn eq userID
+            }.map { User(it) })
+        }
+            return ret
+    }
+    suspend fun doesFollow(follower:Int, followed: Int): Boolean{
+        var ret = false
+        DatabaseFactory.dbQuery {
+            ret = FollowsTable.select { (FollowsTable.userIDFollowed eq followed) and (FollowsTable.userIDFollower eq follower) }.count() == 1L
+        }
+        return ret
+    }
+
     suspend fun followerCount(userID: Int): Int {
         var ret = 0
         DatabaseFactory.dbQuery {
@@ -258,25 +300,67 @@ object Operations {
         return ret
     }
 
+    suspend fun getReplyChain(tweetID: Int, userID: Int): List<FullTweet> {
+        val ret = mutableListOf<Tweet>()
+        DatabaseFactory.dbQuery {
+            transaction {
+                exec("CALL get_replies(\"${tweetID}\");") { result ->
+                    while (result.next()) {
+                        ret.add(
+                            Tweet(
+                                result.getInt("id"),
+                                result.getInt("userID"),
+                                result.getString("text"),
+                                DateTime(result.getDate("timestamp"))
+                            )
+                        )
+                    }
+                }
+//
+            }
+        }
+        return ret.map { FullTweet.tweetToFullTweet(it, userID) }
+    }
+
+    suspend fun getFavoritedUsers(tweetID: Int): List<User> {
+        val ret = mutableListOf<User>()
+        DatabaseFactory.dbQuery {
+            ret.addAll(
+                UserTable.join(FavoritesTable, JoinType.INNER, UserTable.id, FavoritesTable.userID)
+                    .select { FavoritesTable.tweetID eq tweetID }.map { User(it) })
+        }
+        return ret
+    }
+
+    suspend fun getRetweetedUsers(tweetID: Int): List<User> {
+        val ret = mutableListOf<User>()
+        DatabaseFactory.dbQuery {
+            ret.addAll(
+                UserTable.join(RetweetsTable, JoinType.INNER, UserTable.id, RetweetsTable.userID)
+                    .select { RetweetsTable.tweetID eq tweetID }.map { User(it) })
+        }
+        return ret
+    }
+
     //instead of actually deleting, as this will really screw up a lot of things for replies (nested etc) and RTs
     //which could be solved with cascade, I'd rather just do what Reddit does and remove all the user data
     //and change to [deleted] for the text
-    suspend fun deleteTweet(tweetID: Int){
+    suspend fun deleteTweet(tweetID: Int) {
         DatabaseFactory.dbQuery {
-            TweetTable.update ({ TweetTable.id eq tweetID }) {
-                it[TweetTable.userID] = -1
-                it[TweetTable.text] = "[deleted]"
+            TweetTable.update({ TweetTable.id eq tweetID }) {
+                it[userID] = -1
+                it[text] = "[deleted]"
             }
         }
     }
 
-//assumes the user will exists, will throw an exception
+    //assumes the user will exists, will throw an exception
     suspend fun getUser(user: String): User {
-        var ret = User(0,"","",DateTime.now())
+        var ret = User(0, "", "", DateTime.now())
         DatabaseFactory.dbQuery {
             ret = User(UserTable.select { UserTable.userID eq user }.first())
         }
-    return ret
+        return ret
     }
 
     suspend fun getAllUsers(): List<String> {
@@ -355,20 +439,6 @@ object Operations {
 suspend fun main() {
     DatabaseFactory.init()
 //    Operations.retweetTweet(500,1)
-    val ids = listOf(65540,
-        35302,
-        28863,
-        26384,
-        31150,
-        26928,
-        38899,
-        37998,
-        38803,
-        33683,
-        44823,
-        41245,
-        42268,
-        41422
-    )
-    ids.forEach {  Operations.deleteUser(it)}
+
+    Operations.getReplyChain(196634, 1).forEach { println(it) }
 }

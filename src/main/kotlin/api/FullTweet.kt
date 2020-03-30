@@ -35,7 +35,7 @@ data class FullTweet(
     val isRetweeted: Boolean
 ) {
     companion object {
-        //TODO less DB queries, theres a lot of queries going on here...
+        //TODO Make into stored proc so the db isnt sending this data and it just sends the end result
         suspend fun tweetToFullTweet(tweet: Tweet, userID: Int): FullTweet {
             var retweetData: Triple<Boolean, String, Int> = Triple(false, "", 0)
             var replyData: Triple<Boolean, String, Int> = Triple(false, "", 0)

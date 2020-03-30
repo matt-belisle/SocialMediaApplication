@@ -10,11 +10,12 @@ import io.ktor.application.install
 import io.ktor.features.CORS
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.JacksonConverter
+import io.ktor.request.receive
 import io.ktor.response.respond
 import io.ktor.routing.*
 import io.ktor.server.engine.embeddedServer
@@ -24,12 +25,18 @@ import kotlinx.coroutines.runBlocking
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.joda.time.DateTime
-import javax.xml.crypto.Data
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
+data class ReceiveTweet(val tweet: String)
+data class ReceiveDescription(val description: String)
 
 fun Application.module() {
     install(CORS) {
         method(HttpMethod.Delete)
+        header(HttpHeaders.ContentType)
         anyHost()
+
     }
     install(CallLogging)
     install(Routing) {
@@ -55,6 +62,13 @@ fun Application.module() {
                 }
             }
         }
+        route("tweets/replyChain/{tweetID}/{userID}") {
+            get {
+                val tweetID = call.parameters["tweetID"]!!.toInt()
+                val userID = call.parameters["userID"] !!.toInt()
+                call.respond(Operations.getReplyChain(tweetID,userID))
+            }
+        }
         route("login/{userName}"){
             post {
                 val userName = call.parameters["userName"]!!
@@ -73,6 +87,18 @@ fun Application.module() {
                 call.respond(FullTweet.tweetToFullTweet(tweet,searchingUser))
             }
         }
+        route("Followers/{UserID}"){
+            get {
+                val userID = call.parameters["userID"] !!.toInt()
+                call.respond(Operations.followers(userID))
+            }
+        }
+        route("Following/{UserID}"){
+            get{
+                val userID = call.parameters["userID"] !!.toInt()
+                call.respond(Operations.followedUsers(userID))
+            }
+        }
         // this includes yourself
         route("tweets/ByFollowed/{userID}") {
             get {
@@ -81,7 +107,20 @@ fun Application.module() {
                 call.respond(Operations.getFollowedTweets(userID.toInt()))
             }
         }
+        route("user/description/{userID}") {
+            post {
+                val userID = call.parameters["userID"]!!.toInt()
+                val description = call.receive<ReceiveDescription>()
+                Operations.updateDescription(userID,description.description)
+                call.respond(200)
+            }
+        }
         route("follow/{follower}/{followed}") {
+            get {
+                val follower = call.parameters["follower"]!!.toInt()
+                val followed = call.parameters["followed"]!!.toInt()
+                call.respond(Operations.doesFollow(follower, followed))
+            }
             post {
                 val follower = call.parameters["follower"]!!.toInt()
                 val followed = call.parameters["followed"]!!.toInt()
@@ -104,33 +143,45 @@ fun Application.module() {
                 }
             }
         }
-        route("favorite/tweet/{tweetID}/{userID}") {
-            post {
+        route("favorite/tweet/{tweetID}") {
+            get {
                 val tweetID = call.parameters["tweetID"]!!.toInt()
-                val userID = call.parameters["userID"]!!.toInt()
-
-                Operations.favoriteTweet(tweetID, userID)
-                call.respond(200)
+                call.respond(Operations.getFavoritedUsers(tweetID))
             }
-            delete {
-                val tweetID = call.parameters["tweetID"]!!.toInt()
-                val userID = call.parameters["userID"]!!.toInt()
-                Operations.unfavoriteTweet(tweetID, userID)
-                call.respond(200)
+            route("{userID}") {
+                post {
+                    val tweetID = call.parameters["tweetID"]!!.toInt()
+                    val userID = call.parameters["userID"]!!.toInt()
+
+                    Operations.favoriteTweet(tweetID, userID)
+                    call.respond(200)
+                }
+                delete {
+                    val tweetID = call.parameters["tweetID"]!!.toInt()
+                    val userID = call.parameters["userID"]!!.toInt()
+                    Operations.unfavoriteTweet(tweetID, userID)
+                    call.respond(200)
+                }
             }
         }
-        route("retweet/tweet/{tweetID}/{userID}") {
-            post {
+        route("retweet/tweet/{tweetID}") {
+            get {
                 val tweetID = call.parameters["tweetID"]!!.toInt()
-                val userID = call.parameters["userID"]!!.toInt()
-                Operations.retweetTweet(tweetID, userID)
-                call.respond(200)
+                call.respond(Operations.getRetweetedUsers(tweetID))
             }
-            delete {
-                val tweetID = call.parameters["tweetID"]!!.toInt()
-                val userID = call.parameters["userID"]!!.toInt()
-                Operations.unRetweetTweet(tweetID, userID)
-                call.respond(200)
+            route("{userID}") {
+                post {
+                    val tweetID = call.parameters["tweetID"]!!.toInt()
+                    val userID = call.parameters["userID"]!!.toInt()
+                    Operations.retweetTweet(tweetID, userID)
+                    call.respond(200)
+                }
+                delete {
+                    val tweetID = call.parameters["tweetID"]!!.toInt()
+                    val userID = call.parameters["userID"]!!.toInt()
+                    Operations.unRetweetTweet(tweetID, userID)
+                    call.respond(200)
+                }
             }
         }
         route("retweet/count/{tweetID}") {
@@ -139,13 +190,13 @@ fun Application.module() {
                 call.respond(Operations.countRetweets(tweetID))
             }
         }
-        route("tweet/{userID}/{tweet}/{replyTo?}") {
+        route("tweet/{userID}/{replyTo?}") {
             post {
                 val userID = call.parameters["userID"]!!.toInt()
-                val tweet = call.parameters["tweet"]!!
                 val replyTo = call.parameters["replyTo"]
+                val post = call.receive<ReceiveTweet>()
                 // where -1 is not replied to
-                Operations.parseAndInsertTweet(tweet, userID, replyTo?.toInt() ?: -1)
+                Operations.parseAndInsertTweet(post.tweet, userID, replyTo?.toInt() ?: -1)
                 call.respond(200)
             }
         }
@@ -190,11 +241,14 @@ fun Application.module() {
                 call.respond(Operations.getAllUsers())
             }
         }
-        route("hashtag/{userID}/{hashtag}") {
+        route("hashtag/{userID}/{hashtag}/{subHashtags}") {
             get {
-                val hashTag = call.parameters["hashtag"]!!
+                //get the #s back
+                // may be inappropriate blocking call but its needed to get the hashtags back (among other entities)...
+                val hashTag = URLDecoder.decode(call.parameters["hashtag"]!!, StandardCharsets.UTF_8.toString())
                 val userID = call.parameters["userID"]!!.toInt()
-                call.respond(Operations.getTweetsForHashTag(hashTag,userID))
+                val subHashtags = call.parameters["subHashtags"]!!.toBoolean()
+                call.respond(Operations.getTweetsForHashTag(hashTag,userID,subHashtags))
             }
         }
     }

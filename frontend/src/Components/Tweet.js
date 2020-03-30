@@ -1,46 +1,55 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {ActionLink} from "./ActionLink";
-import Popup from "reactjs-popup";
+import TweetModal from "./TweetModal";
+import ListModal from "./ListModal";
 
 const reactStringReplace = require('react-string-replace');
 
-const Tweet = ({tweets, header, currUserID, refreshTweets, users}) => {
+const Tweet = ({tweets, header, currUserID, refreshTweets, users, replyChain, deleteTweet, searchHashTag, selectUser}) => {
 
     function handleFavoriteClick(e, tweet) {
         e.preventDefault();
         let method = tweet.isFavorited === true ? 'delete' : 'post';
-        fetch(`http://localhost:8080/favorite/tweet/${tweet.tweetID}/${currUserID}`, {method: method})
+        fetch(`http://localhost:8080/favorite/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then (() => refreshTweets(currUserID))
         //refresh the tweet
-        refreshTweets(currUserID)
     }
 
     function handleRetweetClick(e, tweet) {
         e.preventDefault();
         let method = tweet.isRetweeted === true ? 'delete' : 'post';
-        fetch(`http://localhost:8080/retweet/tweet/${tweet.tweetID}/${currUserID}`, {method: method})
-        //refresh the tweet
-        refreshTweets(currUserID)
+        fetch(`http://localhost:8080/retweet/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then(() => refreshTweets(currUserID))
     }
 
     // should reload the page with all tweets with the hashtag
     function handleHashtagClick(e, hashtag) {
-
+        e.preventDefault()
+        // go to the parent and tell it we need to get these tweets
+        searchHashTag(hashtag, true)
     }
 
-    //should reload the page with the clicked users profile
-    function handleMentionClick(e, mention) {
-
-    }
-
-    // should effectively load whatever will be the thing that makes tweets
-    function handleReplyClick(e, tweetRepliedTo) {
+    // //should reload the page with the clicked users profile
+    // function handleMentionClick(e, mention) {
+    //
+    // }
+    //
+    // //should be same as mention so collapse?
+    function handleUserClick(e, userName) {
         e.preventDefault();
+        // transition to usersProfile
+        selectUser(userName)
     }
 
-    //should be same as mention so collapse?
-    function handleUserClick(e, userID) {
-
+    //view more of replies
+    function handleViewMoreClick(e, tweet) {
+        e.preventDefault()
+        replyChain(tweet)
     }
+
+    function handleDeleteClick(e, tweet) {
+        e.preventDefault()
+        deleteTweet(tweet)
+    }
+
 
     return (
 
@@ -57,17 +66,26 @@ const Tweet = ({tweets, header, currUserID, refreshTweets, users}) => {
                 });
 
                 // Match hashtags
-                replacedText = reactStringReplace(replacedText, /#(\w+)/g, (match, i) => (
-                    <a key={match + i} href={`https://twitter.com/hashtag/${match}`}>#{match}</a>
+                replacedText = reactStringReplace(replacedText, /#([\w(##)]+)/g, (match, i) => (
+                    <ActionLink text={`#${match}`} id={match} onClick={handleHashtagClick}/>
                 ));
 
                 let retweetData = tweet.isRetweet ?
                     <h6 className="card-subtitle mb-2 text-muted">{`${tweet.user_name} retweeted ${tweet.originalPoster}`}</h6> : ""
 
+                let replyData = tweet.isReply ?
+                    <h6 className="card-subtitle mb-2 text-muted">{`${tweet.user_name} replied to ${tweet.repliedTo} -- ${tweet.repliedToID}`}
+                        <ActionLink text={"View Reply Chain"} onClick={handleViewMoreClick} id={tweet}/></h6> : ""
+                let deleteTweet = tweet.userID === currUserID ?
+                    <ActionLink text={"Delete"} onClick={handleDeleteClick} id={tweet}/> : ""
+
                 return (<div key={tweet.tweetID.toString()} className="card">
                     <div className="card-body">
-                        <h5 className="card-title">{tweet.user_name}</h5>
-                        {retweetData}
+                        <div style={{paddingBottom: '10px'}}>
+                            <h5 className="card-title"><ActionLink text={`@${tweet.user_name}`} onClick={handleUserClick} id={tweet.user_name}/> -- {tweet.tweetID}</h5>
+                            {retweetData}
+                            {replyData}
+                        </div>
                         <h6 className="card-subtitle mb-2 text-muted">{replacedText}</h6>
                         <p className="card-text">{}</p>
                         <div>
@@ -77,6 +95,17 @@ const Tweet = ({tweets, header, currUserID, refreshTweets, users}) => {
                             <ActionLink text={tweet.isRetweeted === true ? "UnRetweet" : "Retweet"}
                                         onClick={handleRetweetClick} id={tweet}/>
                             <span>: {tweet.retweets}</span>
+                            <TweetModal replyToID={tweet.tweetID.toString()} currUserID={currUserID} isReply={true}
+                                        refreshTweets={refreshTweets}/>
+                            {deleteTweet}
+                            {/*the ternary is effectively conditional display*/}
+                            {tweet.favorites > 0 ? <ListModal linkText={"View Favorites"}
+                                                              getListLink={`http://localhost:8080/favorite/tweet/${tweet.tweetID}`}
+                                                              title={`People who have favorited Tweet #${tweet.tweetID}`}/> : ""}
+                            {tweet.retweets > 0 ? <ListModal linkText={"View Retweets"}
+                                                             getListLink={`http://localhost:8080/retweet/tweet/${tweet.tweetID}`}
+                                                             title={`People who have retweeted Tweet #${tweet.tweetID}`}/> : ""}
+
                         </div>
                     </div>
                 </div>)
