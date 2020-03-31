@@ -2,7 +2,7 @@ build/
 .gradle/*
 
 
-
+Database/dump/*.sql
 
 
 
