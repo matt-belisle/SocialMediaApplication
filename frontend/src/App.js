@@ -3,10 +3,15 @@ import Tweet from "./Components/Tweet";
 import {ToastProvider} from 'react-toast-notifications'
 import Login from "./Components/Login";
 import UserProfile from "./Components/UserProfile";
-
+import Ribbon from "./Components/Ribbon";
+export const AppState = {
+    LOGIN: 'login',
+    TWEETS: 'tweet',
+    VIEW_REPLIES: 'viewReplies',
+    HASHTAG: 'hashtag',
+    PROFILE: 'profile'
+};
 class App extends Component {
-
-
     constructor() {
         super();
         this.getTweets = this.getTweets.bind(this)
@@ -16,17 +21,21 @@ class App extends Component {
         this.getTweetsForHashtag = this.getTweetsForHashtag.bind(this)
         this.hashTagRefresh = this.hashTagRefresh.bind(this)
         this.selectUser = this.selectUser.bind(this)
-        this.state = {
-            tweets: [],
-            screen: AppState.LOGIN,
-            loggedIn: {},
-            selectedUser: {},
-            users: [],
-            selectedTweet: {},
-            selectedReply: {},
-            searchedHashTag: ""
-        };
+        this.logout = this.logout.bind(this)
+        this.profile = this.profile.bind(this)
+        this.home = this.home.bind(this)
+        this.state = this.defaultState
     }
+    defaultState = {
+        tweets: [],
+        screen: AppState.LOGIN,
+        loggedIn: {},
+        selectedUser: {},
+        users: [],
+        selectedTweet: {},
+        selectedReply: {},
+        searchedHashTag: ""
+    };
 
     getUser(userName) {
         fetch(`http://localhost:8080/user/${userName}`).then(res => res.json()).then((data) => {
@@ -101,6 +110,28 @@ class App extends Component {
             console.log("Tried to delete a tweet you do not own")
         }
     }
+    logout(e) {
+        e.preventDefault();
+        this.setState(this.defaultState )
+    }
+    home(e) {
+        e.preventDefault();
+        fetch(`http://localhost:8080/tweets/ByFollowed/${this.state.loggedIn.id}`)
+            .then(res => res.json())
+            .then((data) => {
+                this.setState({screen: AppState.TWEETS, tweets: data})
+            })
+            .catch(console.log)
+    }
+    profile(e){
+        e.preventDefault();
+        fetch(`http://localhost:8080/tweets/ForUser/${this.state.loggedIn.id}/${this.state.loggedIn.id}`)
+            .then(res => res.json())
+            .then((data) => {
+                this.setState({screen: AppState.PROFILE, tweets: data, selectedUser: this.state.loggedIn})
+            })
+            .catch(console.log);
+    }
     // transitions to a usersProfile
     selectUser(userName){
         fetch(`http://localhost:8080/user/${userName}`).then(res => res.json()).then((data) => {
@@ -117,6 +148,7 @@ class App extends Component {
         let tweetHeader = "";
         let refreshTweets = "";
         let currScreen = "";
+        let ribbon = "";
         switch (this.state.screen) {
             case AppState.LOGIN:
                 loginScreen = <Login getUserAndFinishLogin={this.getUser}/>;
@@ -143,9 +175,10 @@ class App extends Component {
                 break;
 
         }
+        ribbon = <Ribbon refreshTweets={refreshTweets} currUser={this.state.loggedIn} logOutCallback={this.logout} homeCallback={this.home} profileCallBack={this.profile} />
         profileScreen = this.state.screen === AppState.PROFILE ? <UserProfile currentUser={this.state.loggedIn} viewedUser={this.state.selectedUser} fetchUser={this.selectUser}/> : ""
         tweetScreen = <Tweet tweets={this.state.tweets} header={tweetHeader} currUserID={this.state.loggedIn.id} refreshTweets={refreshTweets} deleteTweet={this.deleteTweet} searchHashTag={this.getTweetsForHashtag} selectUser={this.selectUser} replyChain={this.replyChain} users={this.state.users} />
-        currScreen = this.state.screen === AppState.LOGIN ? loginScreen : <div> {profileScreen} {tweetScreen}</div>
+        currScreen = this.state.screen === AppState.LOGIN ? loginScreen : <div>{ribbon} {profileScreen} {tweetScreen}</div>
 
         return (
             <ToastProvider>
@@ -155,11 +188,5 @@ class App extends Component {
     }
 }
 
-export const AppState = {
-    LOGIN: 'login',
-    TWEETS: 'tweet',
-    VIEW_REPLIES: 'viewReplies',
-    HASHTAG: 'hashtag',
-    PROFILE: 'profile'
-};
+
 export default App;

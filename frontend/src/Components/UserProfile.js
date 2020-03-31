@@ -32,8 +32,8 @@ const UserProfile = ({currentUser, viewedUser, fetchUser}) => {
     }
     // a button handler
     function assignFollows(e, id){
-        e.preventDefault()
-        let method = follows ? 'delete' : 'post'
+        e.preventDefault();
+        let method = follows ? 'delete' : 'post';
         fetch(`http://localhost:8080/follow/${currentUser.id}/${viewedUser.id}`, {method: method}).then(() => getFollows())
     }
 
