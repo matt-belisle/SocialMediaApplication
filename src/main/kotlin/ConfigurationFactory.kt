@@ -21,9 +21,9 @@ object ConfigurationFactory {
         //read and populate configuration
 
 //        val fileName = "resources/Configuration.json"
-        val config = File(ClassLoader.getSystemResource("Configuration.json").file)
+        val config = ConfigurationFactory::class.java.getResource("Configuration.json").readText()
 
-        configuration = json.parse(Configuration.serializer(), config.readText())
+        configuration = json.parse(Configuration.serializer(), config)
         logger.debug("Configuration loaded as: $configuration")
 
     }

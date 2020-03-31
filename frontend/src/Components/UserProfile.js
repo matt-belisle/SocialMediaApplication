@@ -7,6 +7,7 @@ import {Button} from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import ListModal from "./ListModal";
 import {ActionLink} from "./ActionLink";
+import {linkString} from "../Configuration";
 
 const UserProfile = ({currentUser, viewedUser, fetchUser}) => {
     let [textArea, setTextArea] = useState(viewedUser.description);
@@ -15,7 +16,7 @@ const UserProfile = ({currentUser, viewedUser, fetchUser}) => {
     let [follows, setFollows] = useState()
 
     function submit() {
-        fetch(`http://localhost:8080/user/description/${viewedUser.id}`, {
+        fetch(`http://${linkString}/user/description/${viewedUser.id}`, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -28,17 +29,17 @@ const UserProfile = ({currentUser, viewedUser, fetchUser}) => {
         })
     }
     function followCountFetch(link, setX) {
-        fetch(`http://localhost:8080/count/${link}`).then(res => res.json()).then(res => setX(res))
+        fetch(`http://${linkString}/count/${link}`).then(res => res.json()).then(res => setX(res))
     }
     // a button handler
     function assignFollows(e, id){
         e.preventDefault();
         let method = follows ? 'delete' : 'post';
-        fetch(`http://localhost:8080/follow/${currentUser.id}/${viewedUser.id}`, {method: method}).then(() => getFollows())
+        fetch(`http://${linkString}/follow/${currentUser.id}/${viewedUser.id}`, {method: method}).then(() => getFollows())
     }
 
     function getFollows(){
-        fetch(`http://localhost:8080/follow/${currentUser.id}/${viewedUser.id}`).then(res => res.json()).then(res => setFollows(res))
+        fetch(`http://${linkString}/follow/${currentUser.id}/${viewedUser.id}`).then(res => res.json()).then(res => setFollows(res))
     }
     // only call when mounted or if the user follows/unfollows them
     useEffect(() =>{
@@ -68,9 +69,9 @@ const UserProfile = ({currentUser, viewedUser, fetchUser}) => {
                 Change Description
             </Button>: ""}
             <div>
-                <ListModal getListLink={`http://localhost:8080/Following/${viewedUser.id}`} title={`${viewedUser.userID} is Following`} linkText={"Following"} />
+                <ListModal getListLink={`http://${linkString}/Following/${viewedUser.id}`} title={`${viewedUser.userID} is Following`} linkText={"Following"} />
                 <span>{followCount}</span>
-                <ListModal getListLink={`http://localhost:8080/Followers/${viewedUser.id}`} title={`Followers for user ${viewedUser.userID}`} linkText={"Followers"}/>
+                <ListModal getListLink={`http://${linkString}/Followers/${viewedUser.id}`} title={`Followers for user ${viewedUser.userID}`} linkText={"Followers"}/>
                 <span>{followersCount}</span>
                 {currentUser.id !== viewedUser.id ? <ActionLink onClick={assignFollows} text={follows ? "UnFollow" : "Follow"} />: ""}
             </div>

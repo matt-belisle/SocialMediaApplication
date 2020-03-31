@@ -17,7 +17,7 @@ object DatabaseFactory {
     // call this before any DB calls to set up DB connection
     fun init() {
         val config = ConfigurationFactory.getConfiguration()
-        Database.connect(url = "jdbc:mysql://${config.dbURL}?useSSL=false&rewriteBatchedInserts=true", driver = "com.mysql.jdbc.Driver", user = config.dbUsername, password = config.dbPassword)
+        Database.connect(url = "jdbc:mysql://${config.dbURL}?useSSL=false&rewriteBatchedInserts=true&useSSL=false&allowPublicKeyRetrieval=true", driver = "com.mysql.cj.jdbc.Driver", user = config.dbUsername, password = config.dbPassword)
         //TransactionManager.manager.defaultIsolationLevel = Connection.TRANSACTION_SERIALIZABLE
     }
 

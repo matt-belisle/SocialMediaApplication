@@ -2,6 +2,7 @@ import React, {useState} from "react";
 import Popup from "reactjs-popup";
 import {Button, FormControl} from "react-bootstrap";
 import InputGroup from "react-bootstrap/InputGroup";
+import {linkString} from "../Configuration";
 
 const TweetModal = ({isReply, replyToID, currUserID, refreshTweets}) => {
     // a tweet will consist of a text box, and two buttons either tweet or cancel, but the "tweet button" content is configurable
@@ -11,7 +12,7 @@ const TweetModal = ({isReply, replyToID, currUserID, refreshTweets}) => {
 
 
     function submit(close) {
-        let string = `http://localhost:8080/tweet/${currUserID}${isReply ? `/${replyToID}` : ""}`
+        let string = `http://${linkString}/tweet/${currUserID}${isReply ? `/${replyToID}` : ""}`
         fetch(string, {
             method: 'POST',
             headers: {

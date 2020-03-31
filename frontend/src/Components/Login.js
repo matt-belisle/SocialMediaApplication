@@ -4,6 +4,7 @@ import React, {useState} from "react";
 import {useToasts} from 'react-toast-notifications'
 import {Button, FormGroup, FormControl, FormLabel} from "react-bootstrap";
 import InputGroup from "react-bootstrap/InputGroup";
+import {linkString} from "../Configuration";
 
 export default function Login({getUserAndFinishLogin}) {
     const {addToast} = useToasts();
@@ -24,7 +25,7 @@ export default function Login({getUserAndFinishLogin}) {
     function handleLogin(event) {
         event.preventDefault()
         // hit the login endpoint, effectively just sees whether a user exists
-        fetch(`http://localhost:8080/login/${user}`, {method: "post"}).then(res => {
+        fetch(`http://${linkString}/login/${user}`, {method: "post"}).then(res => {
             if (res.ok) {
                 addToast(`Successfully logged in as ${user}`, {
                     appearance: 'success'
@@ -40,7 +41,7 @@ export default function Login({getUserAndFinishLogin}) {
 
     function handleRegister(event) {
         event.preventDefault()
-        fetch(`http://localhost:8080/user/${user}`, {method: "post"}).then(res => {
+        fetch(`http://${linkString}/user/${user}`, {method: "post"}).then(res => {
             if (res.ok) {
                 addToast(`Successfully registered user: ${user}`, {
                     appearance: 'success'

@@ -2,6 +2,7 @@ import React from 'react'
 import {ActionLink} from "./ActionLink";
 import TweetModal from "./TweetModal";
 import ListModal from "./ListModal";
+import {linkString} from "../Configuration";
 
 const reactStringReplace = require('react-string-replace');
 
@@ -10,14 +11,14 @@ const Tweet = ({tweets, header, currUserID, refreshTweets, users, replyChain, de
     function handleFavoriteClick(e, tweet) {
         e.preventDefault();
         let method = tweet.isFavorited === true ? 'delete' : 'post';
-        fetch(`http://localhost:8080/favorite/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then (() => refreshTweets(currUserID))
+        fetch(`http://${linkString}/favorite/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then (() => refreshTweets(currUserID))
         //refresh the tweet
     }
 
     function handleRetweetClick(e, tweet) {
         e.preventDefault();
         let method = tweet.isRetweeted === true ? 'delete' : 'post';
-        fetch(`http://localhost:8080/retweet/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then(() => refreshTweets(currUserID))
+        fetch(`http://${linkString}/retweet/tweet/${tweet.tweetID}/${currUserID}`, {method: method}).then(() => refreshTweets(currUserID))
     }
 
     // should reload the page with all tweets with the hashtag
@@ -100,10 +101,10 @@ const Tweet = ({tweets, header, currUserID, refreshTweets, users, replyChain, de
                             {deleteTweet}
                             {/*the ternary is effectively conditional display*/}
                             {tweet.favorites > 0 ? <ListModal linkText={"View Favorites"}
-                                                              getListLink={`http://localhost:8080/favorite/tweet/${tweet.tweetID}`}
+                                                              getListLink={`http://${linkString}/favorite/tweet/${tweet.tweetID}`}
                                                               title={`People who have favorited Tweet #${tweet.tweetID}`}/> : ""}
                             {tweet.retweets > 0 ? <ListModal linkText={"View Retweets"}
-                                                             getListLink={`http://localhost:8080/retweet/tweet/${tweet.tweetID}`}
+                                                             getListLink={`http://${linkString}/retweet/tweet/${tweet.tweetID}`}
                                                              title={`People who have retweeted Tweet #${tweet.tweetID}`}/> : ""}
 
                         </div>

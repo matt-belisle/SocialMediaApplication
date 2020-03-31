@@ -1,5 +1,5 @@
 {
-    "dbUsername" : "root",
+    "dbUsername" : "user",
     "dbPassword" : "password",
-    "dbURL" : "localhost:3308/SocialMedia"
+    "dbURL" : "db:3306/SocialMedia"
 }

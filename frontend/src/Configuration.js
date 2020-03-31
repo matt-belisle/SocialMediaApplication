@@ -1,0 +1,1 @@
+export const linkString = 'localhost:8081'

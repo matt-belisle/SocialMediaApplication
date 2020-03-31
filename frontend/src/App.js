@@ -4,6 +4,7 @@ import {ToastProvider} from 'react-toast-notifications'
 import Login from "./Components/Login";
 import UserProfile from "./Components/UserProfile";
 import Ribbon from "./Components/Ribbon";
+import {linkString} from "./Configuration";
 export const AppState = {
     LOGIN: 'login',
     TWEETS: 'tweet',
@@ -38,14 +39,14 @@ class App extends Component {
     };
 
     getUser(userName) {
-        fetch(`http://localhost:8080/user/${userName}`).then(res => res.json()).then((data) => {
+        fetch(`http://${linkString}/user/${userName}`).then(res => res.json()).then((data) => {
             this.setState({loggedIn: data})
             this.getTweets(this.state.loggedIn.id)
             this.setState({screen: AppState.TWEETS})
         }).catch(console.log)
 
 
-        fetch(`http://localhost:8080/users/all`).then(res => res.json()).then((data) => {
+        fetch(`http://${linkString}/users/all`).then(res => res.json()).then((data) => {
             this.setState({users: data})
         }).catch(console.log)
     }
@@ -54,14 +55,14 @@ class App extends Component {
         if(this.state.screen === AppState.VIEW_REPLIES && this.state.tweets.length > 0){
             this.replyChain(this.state.tweets[0])
         } else if (this.state.screen === AppState.PROFILE){
-            fetch(`http://localhost:8080/tweets/ForUser/${userID}/${this.state.selectedUser.id}`)
+            fetch(`http://${linkString}/tweets/ForUser/${userID}/${this.state.selectedUser.id}`)
                 .then(res => res.json())
                 .then((data) => {
                     this.setState({tweets: data})
                 })
                 .catch(console.log)
         } else {
-            fetch(`http://localhost:8080/tweets/ByFollowed/${userID}`)
+            fetch(`http://${linkString}/tweets/ByFollowed/${userID}`)
                 .then(res => res.json())
                 .then((data) => {
                     this.setState({tweets: data})
@@ -71,7 +72,7 @@ class App extends Component {
     }
 
     getTweetsForHashtag(hashtag, subHashTag){
-        fetch(`http://localhost:8080/hashtag/${this.state.loggedIn.id}/${encodeURI(hashtag).replace(/#/g, "%23")}/${subHashTag}`).then(res => res.json())
+        fetch(`http://${linkString}/hashtag/${this.state.loggedIn.id}/${encodeURI(hashtag).replace(/#/g, "%23")}/${subHashTag}`).then(res => res.json())
             .then((data) => {
                 this.setState({tweets: data, screen: AppState.HASHTAG, searchedHashTag: hashtag})
             })
@@ -83,7 +84,7 @@ class App extends Component {
     }
     // will effectively be the view more button for reply chaining
     replyChain(tweet) {
-        fetch(`http://localhost:8080/tweets/replyChain/${tweet.tweetID}/${this.state.loggedIn.id}`)
+        fetch(`http://${linkString}/tweets/replyChain/${tweet.tweetID}/${this.state.loggedIn.id}`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({tweets: data, screen: AppState.VIEW_REPLIES, selectedReply: tweet})
@@ -93,7 +94,7 @@ class App extends Component {
 
     deleteTweet(tweet) {
         if(tweet.userID === this.state.loggedIn.id){
-            fetch(`http://localhost:8080/deleteTweet/${tweet.tweetID}`, {method: 'delete'}).then( ret => {
+            fetch(`http://${linkString}/deleteTweet/${tweet.tweetID}`, {method: 'delete'}).then( ret => {
                     if (this.state.screen === AppState.VIEW_REPLIES) {
                         if (this.state.selectedReply.tweetID === tweet.tweetID) {
                             this.setState({screen: AppState.TWEETS})
@@ -116,7 +117,7 @@ class App extends Component {
     }
     home(e) {
         e.preventDefault();
-        fetch(`http://localhost:8080/tweets/ByFollowed/${this.state.loggedIn.id}`)
+        fetch(`http://${linkString}/tweets/ByFollowed/${this.state.loggedIn.id}`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({screen: AppState.TWEETS, tweets: data})
@@ -125,7 +126,7 @@ class App extends Component {
     }
     profile(e){
         e.preventDefault();
-        fetch(`http://localhost:8080/tweets/ForUser/${this.state.loggedIn.id}/${this.state.loggedIn.id}`)
+        fetch(`http://${linkString}/tweets/ForUser/${this.state.loggedIn.id}/${this.state.loggedIn.id}`)
             .then(res => res.json())
             .then((data) => {
                 this.setState({screen: AppState.PROFILE, tweets: data, selectedUser: this.state.loggedIn})
@@ -134,7 +135,7 @@ class App extends Component {
     }
     // transitions to a usersProfile
     selectUser(userName){
-        fetch(`http://localhost:8080/user/${userName}`).then(res => res.json()).then((data) => {
+        fetch(`http://${linkString}/user/${userName}`).then(res => res.json()).then((data) => {
                 this.setState({screen: AppState.PROFILE, selectedUser: data})
                 this.getTweets(this.state.loggedIn.id)
             }
