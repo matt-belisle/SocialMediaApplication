@@ -6,6 +6,7 @@ import kotlinx.coroutines.selects.select
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.joda.time.DateTime
 import javax.xml.crypto.Data
 
@@ -35,7 +36,6 @@ data class FullTweet(
     val isRetweeted: Boolean
 ) {
     companion object {
-        //TODO Make into stored proc so the db isnt sending this data and it just sends the end result
         suspend fun tweetToFullTweet(tweet: Tweet, userID: Int): FullTweet {
             var retweetData: Triple<Boolean, String, Int> = Triple(false, "", 0)
             var replyData: Triple<Boolean, String, Int> = Triple(false, "", 0)
@@ -44,52 +44,49 @@ data class FullTweet(
             var userName: String = ""
             var isRetweeted: Boolean = false
             var isFavorited: Boolean = false
-
-            // so a retweet is just the original tweets id + the new tweeters id, so to see if it is a retweet
-            // see if it is in the table
-
             DatabaseFactory.dbQuery {
-                //begin retweet data
-                var retweetUserID: Int = 0
-                var retweetUserName = ""
-                val isRetweet =
-                    RetweetsTable.select { (RetweetsTable.userID eq tweet.userID) and (RetweetsTable.tweetID eq tweet.id) }
-                        .count() > 0
-                if (isRetweet) {
-                    // note only one thing will return
-                    val row = (UserTable.join(TweetTable, JoinType.INNER, UserTable.id, TweetTable.userID)
-                        .slice(UserTable.id, UserTable.userID).select {
-                            TweetTable.id eq tweet.id
-                        }).first()
-                    retweetUserID = row[UserTable.id]
-                    retweetUserName = row[UserTable.userID]
+
+                transaction {
+                    // I dont think these can be combined into the larger query
+                    favorites = FavoritesTable.select { FavoritesTable.tweetID eq tweet.id }.count().toInt()
+                    retweets = RetweetsTable.select { RetweetsTable.tweetID eq tweet.id }.count().toInt()
+                    // this is a replacement for a few shorter calls that were in this
+                    exec ("""
+                        Select T.userID as userID, T.id as tweetID, T.timestamp as timestamp, T.text as 'text',
+                               U.userID as 'userName',
+                               RetweetedUser.userID as 'originalPoster', RetweetedUser.id as 'originalPosterID',
+                               RepliedUser.userID as 'repliedTo', RepliedUser.id as 'repliedToID',
+                               IF(R.originalID is null, false, true) as 'isReply',
+                               IF(R3.userID is null, false, true) as 'isRetweet',
+                               IF(F.userID is null, false, true) as 'isFavorited',
+                               IF(R2.userID = $userID, true, false) as 'isRetweeted'
+                        from Tweet T
+                                 INNER JOIN User U on ${tweet.userID} = U.id
+                                 LEFT JOIN Reply R on T.id = R.replyID
+                                 LEFT JOIN Tweet T2 on T2.id = R.originalID
+                                 LEFT JOIN User RepliedUser on T2.userID = RepliedUser.id
+                            -- basically we want to get the original tweeter as this may just be a
+                            -- retweet if this is null then we should assume it is not a retweet
+                                 LEFT JOIN Retweet R3 on R3.userID = ${tweet.userID} and R3.tweetID = T.id
+                                 LEFT JOIN User RetweetedUser on T.userID = RetweetedUser.id
+                                 LEFT JOIN Retweet R2 on R2.userID = $userID and R2.tweetID = T.id
+                                 LEFT JOIN Favorite F on F.userID = $userID and F.tweetID = T.id
+                        where T.id = ${tweet.id}
+                    """.trimIndent()) {
+                        while(it.next()) {
+                            retweetData = Triple(it.getBoolean("isRetweet"), it.getString("originalPoster") ?: "",
+                                it.getInt("originalPosterID")
+                            )
+                            replyData = Triple(it.getBoolean("isReply"), it.getString("repliedTo") ?: "",
+                                it.getInt("repliedToID")
+                            )
+                            // you cannot favorite/retweet a retweeted tweet in my social media
+                            isRetweeted = !retweetData.first && it.getBoolean("isRetweeted")
+                            isFavorited = !retweetData.first &&it.getBoolean("isFavorited")
+                            userName = it.getString("userName")
+                        }
+                    }
                 }
-                retweetData = Triple(isRetweet, retweetUserName, retweetUserID)
-                //end retweet data
-
-                //begin reply data
-                val isReply = ReplyTable.select { (ReplyTable.replyID eq tweet.id) }.count() > 0
-                var repliedTo: String = ""
-                var repliedToID: Int = 0
-
-                if (isReply) {
-                    val row = (ReplyTable.join(TweetTable, JoinType.INNER, ReplyTable.originalID, TweetTable.id)
-                        .join(UserTable, JoinType.INNER, TweetTable.userID, UserTable.id)
-                        .slice(UserTable.userID, ReplyTable.originalID)
-                        .select { (ReplyTable.replyID eq tweet.id) }).first()
-                    repliedTo = row[UserTable.userID]
-                    repliedToID = row[ReplyTable.originalID]
-                }
-                //basically you cannot favorite/retweet a retweet in MY social media :)
-                isRetweeted = !isRetweet && RetweetsTable.select { (RetweetsTable.tweetID eq tweet.id) and (RetweetsTable.userID eq userID)}.count() > 0
-                isFavorited = !isRetweet && FavoritesTable.select { (FavoritesTable.tweetID eq tweet.id) and (FavoritesTable.userID eq userID) }.count() > 0
-
-                replyData = Triple(isReply, repliedTo, repliedToID)
-
-                favorites = FavoritesTable.select { FavoritesTable.tweetID eq tweet.id }.count().toInt()
-                retweets = RetweetsTable.select { RetweetsTable.tweetID eq tweet.id }.count().toInt()
-                userName =
-                    UserTable.slice(UserTable.userID).select { UserTable.id eq tweet.userID }.first()[UserTable.userID]
             }
             return FullTweet(
                 tweet.id,
@@ -110,12 +107,13 @@ data class FullTweet(
             )
         }
     }
+
+
 }
 
 suspend fun main() {
     DatabaseFactory.init()
-    var tweet: Tweet = Tweet(1, 1, "", DateTime.now())
-    DatabaseFactory.dbQuery { tweet = Tweet(TweetTable.select { TweetTable.id eq 1 }.first()) }
+    var tweet: Tweet = Tweet(119131, 1, "", DateTime.now())
+//    DatabaseFactory.dbQuery { tweet = Tweet(TweetTable.select { TweetTable.id eq 1 }.first()) }
     println(FullTweet.tweetToFullTweet(tweet, 1))
-
 }
