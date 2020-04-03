@@ -20,7 +20,9 @@ services:
     volumes:
       # replace with path to the location you would like the mySQL drive to map to
       - dbData:/var/lib/mysql2
-      - ./Database/dump/backup.sql:/docker-entrypoint-initdb.d/backup.sql:ro
+      # put the database intialization scripts in
+      - ./Database/backup.sql:/docker-entrypoint-initdb.d/backup.sql:ro
+      - ./Database/StoredProcedures.sql:/docker-entrypoint-initdb.d/StoredProcedures.sql:ro
 
   backend:
       build: '.'
