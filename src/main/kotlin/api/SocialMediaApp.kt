@@ -49,7 +49,6 @@ fun Application.module() {
                 if (userID == null) {
                     //get all tweets
                         val tweets = mutableListOf<FullTweet>()
-                        val callRef = call
                         DatabaseFactory.dbQuery {
                             TweetTable.selectAll().limit(10).orderBy(TweetTable.timestamp)
                                 .forEach { runBlocking { tweets.add(FullTweet.tweetToFullTweet(Tweet(it), searchingUser)) } }

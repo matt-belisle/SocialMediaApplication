@@ -28,7 +28,7 @@ class GetAllHashTags {
         val data = mutableMapOf<Int, String>()
         DatabaseFactory.dbQuery {
             (TweetTable.slice(TweetTable.id, TweetTable.text).selectAll()
-                .forEach { data[it[TweetTable.id]] = it[TweetTable.text] ?: "" })
+                .forEach { data[it[TweetTable.id]] = it[TweetTable.text] })
         }
         return data
     }
