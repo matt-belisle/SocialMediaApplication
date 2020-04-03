@@ -22,7 +22,7 @@ services:
       - dbData:/var/lib/mysql2
       # put the database intialization scripts in
       - ./Database/backup.sql:/docker-entrypoint-initdb.d/backup.sql:ro
-      - ./Database/StoredProcedures.sql:/docker-entrypoint-initdb.d/StoredProcedures.sql:ro
+        #      - ./Database/StoredProcedures.sql:/docker-entrypoint-initdb.d/StoredProcedures.sql:ro
 
   backend:
       build: '.'

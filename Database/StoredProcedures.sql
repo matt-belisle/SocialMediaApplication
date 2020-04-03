@@ -1,4 +1,4 @@
-DROP PROCEDURE IF EXISTS insert_tweet;
+-- DROP PROCEDURE IF EXISTS insert_tweet;
 CREATE PROCEDURE insert_tweet(in tweet TEXT,
                               in user_id INTEGER)
 begin
@@ -14,7 +14,7 @@ begin
 end;
 
 
-DROP PROCEDURE IF EXISTS get_replies;
+-- DROP PROCEDURE IF EXISTS get_replies;
 CREATE PROCEDURE get_replies(
     in tweetID INTEGER
 )
