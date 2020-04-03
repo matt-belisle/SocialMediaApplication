@@ -77,7 +77,7 @@ const Tweet = ({tweets, header, currUserID, refreshTweets, users, replyChain, de
                 let replyData = tweet.isReply ?
                     <h6 className="card-subtitle mb-2 text-muted">{`${tweet.user_name} replied to ${tweet.repliedTo} -- ${tweet.repliedToID}`}
                         <ActionLink text={"View Reply Chain"} onClick={handleViewMoreClick} id={tweet}/></h6> : ""
-                let deleteTweet = tweet.originalPoster === currUserID ?
+                let deleteTweet = tweet.originalPosterID === currUserID ?
                     <ActionLink text={"Delete"} onClick={handleDeleteClick} id={tweet}/> : ""
 
                 return (<div key={tweet.tweetID.toString()} className="card">

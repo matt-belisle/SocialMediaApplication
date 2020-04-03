@@ -74,16 +74,17 @@ data class FullTweet(
                         where T.id = ${tweet.id}
                     """.trimIndent()) {
                         while(it.next()) {
-                            retweetData = Triple(it.getBoolean("isRetweet"), it.getString("originalPoster") ?: "",
-                                it.getInt("originalPosterID")
-                            )
-                            replyData = Triple(it.getBoolean("isReply"), it.getString("repliedTo") ?: "",
-                                it.getInt("repliedToID")
-                            )
+
                             // you cannot favorite/retweet a retweeted tweet in my social media
                             isRetweeted = it.getBoolean("isRetweeted")
                             isFavorited = it.getBoolean("isFavorited")
                             userName = it.getString("userName")
+                            retweetData = Triple(it.getBoolean("isRetweet"), it.getString("originalPoster") ?: userName,
+                                if(it.getString("originalPoster") == null) tweet.userID else it.getInt("originalPosterID")
+                            )
+                            replyData = Triple(it.getBoolean("isReply"), it.getString("repliedTo") ?: "",
+                                it.getInt("repliedToID")
+                            )
                         }
                     }
                 }

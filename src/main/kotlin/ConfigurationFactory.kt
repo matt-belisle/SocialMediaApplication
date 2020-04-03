@@ -19,7 +19,7 @@ object ConfigurationFactory {
 
     init {
         //read and populate configuration
-        val config = ConfigurationFactory::class.java.getResource("Configuration.json").readText()
+        val config = ConfigurationFactory::class.java.getResource("Configuration.json.local").readText()
 
         configuration = json.parse(Configuration.serializer(), config)
         logger.debug("Configuration loaded as: $configuration")
