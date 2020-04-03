@@ -81,8 +81,8 @@ data class FullTweet(
                                 it.getInt("repliedToID")
                             )
                             // you cannot favorite/retweet a retweeted tweet in my social media
-                            isRetweeted = !retweetData.first && it.getBoolean("isRetweeted")
-                            isFavorited = !retweetData.first &&it.getBoolean("isFavorited")
+                            isRetweeted = it.getBoolean("isRetweeted")
+                            isFavorited = it.getBoolean("isFavorited")
                             userName = it.getString("userName")
                         }
                     }

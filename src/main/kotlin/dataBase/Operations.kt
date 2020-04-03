@@ -60,7 +60,6 @@ object Operations {
                             it[tweetID] = t.id
                             it[hashTag] = currHashTag
                         }
-                        val x = 1
                     }
                 } catch (e: Exception) {
                     // the tweet was unsuccessful for any number of reasons
@@ -111,6 +110,7 @@ object Operations {
                 RetweetsTable.insert {
                     it[this.userID] = userID
                     it[this.tweetID] = tweetID
+                    it[this.timestamp] = DateTime.now()
                 }
             }
         }
@@ -224,7 +224,7 @@ object Operations {
             }.orderBy(TweetTable.timestamp to SortOrder.DESC)
                 .forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
         }
-        return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }
+        return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }.sortedByDescending { it.timestamp }
     }
 
     // includes the user themself, as implicitly you follow yourself
@@ -399,7 +399,7 @@ object Operations {
     }
 
     private fun insertMention(transaction: Transaction, tweetID: Int, userName: String) {
-        with(Transaction) {
+        with(transaction) {
             TweetMentionsTable.insert {
                 it[this.userID] = User(UserTable.select { UserTable.userID eq userName }.first()).id
                 it[this.tweetID] = tweetID
@@ -408,7 +408,7 @@ object Operations {
     }
 
     private fun insertHashTag(transaction: Transaction, hashTag: String) {
-        with(Transaction) {
+        with(transaction) {
             try {
                 HashTagsTable.insert {
                     it[HashTagsTable.hashTag] = hashTag
@@ -421,7 +421,7 @@ object Operations {
     }
 
     private fun insertSubHashTagRelation(transaction: Transaction, parent: String, subHashtag: String) {
-        with(Transaction) {
+        with(transaction) {
             try {
                 SubHashtagTable.insert {
                     it[SubHashtagTable.parent] = parent

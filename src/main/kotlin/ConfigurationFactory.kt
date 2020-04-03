@@ -19,8 +19,6 @@ object ConfigurationFactory {
 
     init {
         //read and populate configuration
-
-//        val fileName = "resources/Configuration.json"
         val config = ConfigurationFactory::class.java.getResource("Configuration.json").readText()
 
         configuration = json.parse(Configuration.serializer(), config)
