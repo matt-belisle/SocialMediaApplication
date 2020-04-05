@@ -222,7 +222,7 @@ object Operations {
             TweetTable.join(RetweetsTable, JoinType.INNER, TweetTable.id, RetweetsTable.tweetID).select {
                 RetweetsTable.userID eq userID
             }.orderBy(TweetTable.timestamp to SortOrder.DESC)
-                .forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[TweetTable.timestamp])) }
+                .forEach { tweets.add(Tweet(it[TweetTable.id], userID, it[TweetTable.text], it[RetweetsTable.timestamp])) }
         }
         return tweets.map { FullTweet.tweetToFullTweet(it, searchingUser) }.sortedByDescending { it.timestamp }
     }

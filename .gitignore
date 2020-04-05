@@ -1,6 +1,6 @@
 build/
 .gradle/*
-
+*.mp4
 
 Database/backup.sql
 

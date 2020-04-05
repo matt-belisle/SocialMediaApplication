@@ -12,9 +12,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/tweets/replyChain/5/1",
+					"raw": "http://localhost:8080/tweets/replyChain/5/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweets",
@@ -32,9 +32,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/tweets/ForUser/1/1",
+					"raw": "http://localhost:8080/tweets/ForUser/1/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweets",
@@ -52,9 +52,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/tweets/ForUser/1",
+					"raw": "http://localhost:8080/tweets/ForUser/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweets",
@@ -71,9 +71,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/login/jocksjig",
+					"raw": "http://localhost:8080/login/jocksjig",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"login",
@@ -89,9 +89,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/tweet/1/500",
+					"raw": "http://localhost:8080/tweet/1/500",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweet",
@@ -108,9 +108,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/Followers/1",
+					"raw": "http://localhost:8080/Followers/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"Followers",
@@ -126,9 +126,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/Following/1",
+					"raw": "http://localhost:8080/Following/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"Following",
@@ -144,9 +144,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/tweets/ByFollowed/1",
+					"raw": "http://localhost:8080/tweets/ByFollowed/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweets",
@@ -173,9 +173,9 @@
 					"raw": "{\n\t\"description\": \"This is a description\"\n\t\n}"
 				},
 				"url": {
-					"raw": "{{path}}/user/description/1",
+					"raw": "http://localhost:8080/user/description/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"user",
@@ -199,9 +199,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/follow/1/2",
+					"raw": "http://localhost:8080/follow/1/2",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"follow",
@@ -218,9 +218,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/follow/1/2",
+					"raw": "http://localhost:8080/follow/1/2",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"follow",
@@ -237,9 +237,9 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/follow/1/2",
+					"raw": "http://localhost:8080/follow/1/2",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"follow",
@@ -256,9 +256,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/favorite/tweet/3",
+					"raw": "http://localhost:8080/favorite/tweet/3",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"favorite",
@@ -275,9 +275,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/favorite/tweet/3/1",
+					"raw": "http://localhost:8080/favorite/tweet/3/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"favorite",
@@ -295,9 +295,9 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/favorite/tweet/3/1",
+					"raw": "http://localhost:8080/favorite/tweet/3/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"favorite",
@@ -315,9 +315,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/retweet/tweet/3",
+					"raw": "http://localhost:8080/retweet/tweet/3",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"retweet",
@@ -334,9 +334,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/retweet/tweet/3/1",
+					"raw": "http://localhost:8080/retweet/tweet/3/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"retweet",
@@ -354,9 +354,9 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/retweet/tweet/3/1",
+					"raw": "http://localhost:8080/retweet/tweet/3/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"retweet",
@@ -374,9 +374,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/retweet/count/3",
+					"raw": "http://localhost:8080/retweet/count/3",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"retweet",
@@ -393,9 +393,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/retweet/count/3",
+					"raw": "http://localhost:8080/retweet/count/3",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"retweet",
@@ -421,9 +421,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{path}}/tweet/1/5",
+					"raw": "http://localhost:8080/tweet/1/5",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweet",
@@ -449,9 +449,9 @@
 					}
 				},
 				"url": {
-					"raw": "{{path}}/tweet/1",
+					"raw": "http://localhost:8080/tweet/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"tweet",
@@ -467,9 +467,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/count/Followers/1",
+					"raw": "http://localhost:8080/count/Followers/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"count",
@@ -486,9 +486,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/count/Following/1",
+					"raw": "http://localhost:8080/count/Following/1",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"count",
@@ -505,9 +505,9 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/user/APITestUser",
+					"raw": "http://localhost:8080/user/APITestUser",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"user",
@@ -523,9 +523,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/user/APITestUser",
+					"raw": "http://localhost:8080/user/APITestUser",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"user",
@@ -541,9 +541,9 @@
 				"method": "DELETE",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/user/65556",
+					"raw": "http://localhost:8080/user/65556",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"user",
@@ -559,9 +559,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/users/all",
+					"raw": "http://localhost:8080/users/all",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"users",
@@ -577,9 +577,9 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{path}}/hashtag/1/shorten/false",
+					"raw": "http://localhost:8080/hashtag/1/shorten/false",
 					"host": [
-						"{{path}}"
+						"http://localhost:8080"
 					],
 					"path": [
 						"hashtag",
