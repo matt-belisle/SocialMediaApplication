@@ -1,0 +1,626 @@
+{
+	"info": {
+		"_postman_id": "da807102-fedd-4341-9782-d845debd3f7d",
+		"name": "Social Media Application",
+		"description": "All of the endpoints made for my ece356 project based around twitter",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get reply chain For a tweet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/tweets/replyChain/5/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweets",
+						"replyChain",
+						"5",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get tweets for a user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/tweets/ForUser/1/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweets",
+						"ForUser",
+						"1",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get the 10 newest tweets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/tweets/ForUser/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweets",
+						"ForUser",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/login/jocksjig",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"login",
+						"jocksjig"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a single tweet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/tweet/1/500",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweet",
+						"1",
+						"500"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Followers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/Followers/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"Followers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Following",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/Following/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"Following",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Tweets by people a user follows",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/tweets/ByFollowed/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweets",
+						"ByFollowed",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Change description",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"description\": \"This is a description\"\n\t\n}"
+				},
+				"url": {
+					"raw": "{{path}}/user/description/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"user",
+						"description",
+						"1"
+					],
+					"query": [
+						{
+							"key": "description",
+							"value": "This is a description set at  {{$timestamp}}",
+							"disabled": true
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Does this user follow another user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/follow/1/2",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"follow",
+						"1",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Follow user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/follow/1/2",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"follow",
+						"1",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unfollow User",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/follow/1/2",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"follow",
+						"1",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get users who favorited a tweet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/favorite/tweet/3",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"favorite",
+						"tweet",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Favorite a tweet",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/favorite/tweet/3/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"favorite",
+						"tweet",
+						"3",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unfavorite a tweet",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/favorite/tweet/3/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"favorite",
+						"tweet",
+						"3",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get users who retweeted a tweet",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/retweet/tweet/3",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"retweet",
+						"tweet",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retweet a tweet",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/retweet/tweet/3/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"retweet",
+						"tweet",
+						"3",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unretweet a tweet",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/retweet/tweet/3/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"retweet",
+						"tweet",
+						"3",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Count number of Retweets",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/retweet/count/3",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"retweet",
+						"count",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Count number of Favorites",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/retweet/count/3",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"retweet",
+						"count",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Reply to a tweet",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"tweet\": \"this is a reply\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{path}}/tweet/1/5",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweet",
+						"1",
+						"5"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Tweet",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \"tweet\": \"this is a tweet\"}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{path}}/tweet/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"tweet",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Count Followers",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/count/Followers/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"count",
+						"Followers",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Count Following",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/count/Following/1",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"count",
+						"Following",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Register a user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/user/APITestUser",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"user",
+						"APITestUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a user",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/user/APITestUser",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"user",
+						"APITestUser"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a user",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/user/65556",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"user",
+						"65556"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all users",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/users/all",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"users",
+						"all"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all users Copy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{path}}/hashtag/1/shorten/false",
+					"host": [
+						"{{path}}"
+					],
+					"path": [
+						"hashtag",
+						"1",
+						"shorten",
+						"false"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "85636383-6672-4ab5-bfcd-ea21245b2145",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "ab2aa197-a94c-4ceb-b0ac-f1e11da68fff",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "d67b250e-0642-48b0-a9b0-823faabdf6ec",
+			"key": "path",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"protocolProfileBehavior": {}
+}
